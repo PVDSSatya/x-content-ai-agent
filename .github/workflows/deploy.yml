@@ -25,9 +25,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
       - name: Install dependencies
         run: npm ci
 
@@ -36,13 +33,24 @@ jobs:
 
       - name: Ensure D1 Database & Apply Migrations (Staging)
         run: |
+          set -euo pipefail
           DB_NAME="${{ env.STAGING_DB_NAME }}"
           echo "Checking D1 database: $DB_NAME"
-          DB_ID=$(npx wrangler d1 list --json | jq -r --arg name "$DB_NAME" '.[] | select(.name == $name) | .uuid' | head -n 1)
+          DB_LIST=$(npx wrangler d1 list --json)
+          DB_ID=$(DB_LIST="$DB_LIST" DB_NAME="$DB_NAME" node -e '
+            const list = JSON.parse(process.env.DB_LIST || "[]");
+            const match = list.find((db) => db.name === process.env.DB_NAME);
+            if (match?.uuid) process.stdout.write(match.uuid);
+          ')
           if [ -z "$DB_ID" ]; then
             echo "Creating D1 database: $DB_NAME"
             npx wrangler d1 create "$DB_NAME"
-            DB_ID=$(npx wrangler d1 list --json | jq -r --arg name "$DB_NAME" '.[] | select(.name == $name) | .uuid' | head -n 1)
+            DB_LIST=$(npx wrangler d1 list --json)
+            DB_ID=$(DB_LIST="$DB_LIST" DB_NAME="$DB_NAME" node -e '
+              const list = JSON.parse(process.env.DB_LIST || "[]");
+              const match = list.find((db) => db.name === process.env.DB_NAME);
+              if (match?.uuid) process.stdout.write(match.uuid);
+            ')
           fi
           if [ -z "$DB_ID" ]; then
             echo "Error: Could not resolve D1 database ID for $DB_NAME"
@@ -84,9 +92,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
       - name: Install dependencies
         run: npm ci
 
@@ -95,13 +100,24 @@ jobs:
 
       - name: Ensure D1 Database & Apply Migrations (Production)
         run: |
+          set -euo pipefail
           DB_NAME="${{ env.PROD_DB_NAME }}"
           echo "Checking D1 database: $DB_NAME"
-          DB_ID=$(npx wrangler d1 list --json | jq -r --arg name "$DB_NAME" '.[] | select(.name == $name) | .uuid' | head -n 1)
+          DB_LIST=$(npx wrangler d1 list --json)
+          DB_ID=$(DB_LIST="$DB_LIST" DB_NAME="$DB_NAME" node -e '
+            const list = JSON.parse(process.env.DB_LIST || "[]");
+            const match = list.find((db) => db.name === process.env.DB_NAME);
+            if (match?.uuid) process.stdout.write(match.uuid);
+          ')
           if [ -z "$DB_ID" ]; then
             echo "Creating D1 database: $DB_NAME"
             npx wrangler d1 create "$DB_NAME"
-            DB_ID=$(npx wrangler d1 list --json | jq -r --arg name "$DB_NAME" '.[] | select(.name == $name) | .uuid' | head -n 1)
+            DB_LIST=$(npx wrangler d1 list --json)
+            DB_ID=$(DB_LIST="$DB_LIST" DB_NAME="$DB_NAME" node -e '
+              const list = JSON.parse(process.env.DB_LIST || "[]");
+              const match = list.find((db) => db.name === process.env.DB_NAME);
+              if (match?.uuid) process.stdout.write(match.uuid);
+            ')
           fi
           if [ -z "$DB_ID" ]; then
             echo "Error: Could not resolve D1 database ID for $DB_NAME"
