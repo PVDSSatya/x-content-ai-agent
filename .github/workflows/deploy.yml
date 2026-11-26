@@ -7,7 +7,8 @@ on:
 
 env:
   NODE_VERSION: '22'
-  DB_NAME: x-content-agent
+  STAGING_DB_NAME: x-content-agent-staging
+  PROD_DB_NAME: x-content-agent
 
 jobs:
   deploy-staging:
@@ -30,15 +31,41 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build || echo "No build script, skipping"
+      - name: TypeCheck
+        run: npm run typecheck
+
+      - name: Ensure D1 Database & Apply Migrations (Staging)
+        run: |
+          DB_NAME="${{ env.STAGING_DB_NAME }}"
+          echo "Checking D1 database: $DB_NAME"
+          DB_ID=$(npx wrangler d1 list --json | jq -r --arg name "$DB_NAME" '.[] | select(.name == $name) | .uuid' | head -n 1)
+          if [ -z "$DB_ID" ]; then
+            echo "Creating D1 database: $DB_NAME"
+            npx wrangler d1 create "$DB_NAME"
+            DB_ID=$(npx wrangler d1 list --json | jq -r --arg name "$DB_NAME" '.[] | select(.name == $name) | .uuid' | head -n 1)
+          fi
+          if [ -z "$DB_ID" ]; then
+            echo "Error: Could not resolve D1 database ID for $DB_NAME"
+            exit 1
+          fi
+          echo "Resolved staging D1 database ID: $DB_ID"
+          DB_ID="$DB_ID" node -e '
+            const fs = require("fs");
+            const cfg = JSON.parse(fs.readFileSync("wrangler.jsonc", "utf8"));
+            cfg.env.staging.d1_databases[0].database_id = process.env.DB_ID;
+            fs.writeFileSync("wrangler.jsonc", JSON.stringify(cfg, null, 2));
+          '
+          npx wrangler d1 migrations apply "$DB_NAME" --env staging --remote
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: "false"
 
       - name: Deploy to Cloudflare Workers (Staging)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          environment: staging
           command: deploy --env staging
 
   deploy-production:
@@ -63,35 +90,39 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build || echo "No build script, skipping"
+      - name: TypeCheck
+        run: npm run typecheck
+
+      - name: Ensure D1 Database & Apply Migrations (Production)
+        run: |
+          DB_NAME="${{ env.PROD_DB_NAME }}"
+          echo "Checking D1 database: $DB_NAME"
+          DB_ID=$(npx wrangler d1 list --json | jq -r --arg name "$DB_NAME" '.[] | select(.name == $name) | .uuid' | head -n 1)
+          if [ -z "$DB_ID" ]; then
+            echo "Creating D1 database: $DB_NAME"
+            npx wrangler d1 create "$DB_NAME"
+            DB_ID=$(npx wrangler d1 list --json | jq -r --arg name "$DB_NAME" '.[] | select(.name == $name) | .uuid' | head -n 1)
+          fi
+          if [ -z "$DB_ID" ]; then
+            echo "Error: Could not resolve D1 database ID for $DB_NAME"
+            exit 1
+          fi
+          echo "Resolved production D1 database ID: $DB_ID"
+          DB_ID="$DB_ID" node -e '
+            const fs = require("fs");
+            const cfg = JSON.parse(fs.readFileSync("wrangler.jsonc", "utf8"));
+            cfg.env.production.d1_databases[0].database_id = process.env.DB_ID;
+            fs.writeFileSync("wrangler.jsonc", JSON.stringify(cfg, null, 2));
+          '
+          npx wrangler d1 migrations apply "$DB_NAME" --env production --remote
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: "false"
 
       - name: Deploy to Cloudflare Workers (Production)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          environment: production
           command: deploy --env production
-
-      - name: Run Database Migrations (Production)
-        run: |
-          echo "Checking/creating D1 database..."
-          DB_OUTPUT=$(npx wrangler d1 create ${{ env.DB_NAME }} --env production --json 2>&1 || true)
-          echo "$DB_OUTPUT"
-          DB_ID=$(echo "$DB_OUTPUT" | jq -r '.result.id // empty' 2>/dev/null || echo "")
-          if [ -z "$DB_ID" ]; then
-            # Try to get existing database ID
-            DB_LIST=$(npx wrangler d1 list --json 2>&1 || true)
-            DB_ID=$(echo "$DB_LIST" | jq -r ".[] | select(.name == \"${{ env.DB_NAME }}\") | .uuid" 2>/dev/null | head -1 || echo "")
-          fi
-          if [ -n "$DB_ID" ]; then
-            echo "Database ID: $DB_ID"
-            echo "Running migrations on database: $DB_ID"
-            npx wrangler d1 migrations apply ${{ env.DB_NAME }} --env production
-          else
-            echo "Warning: Could not determine database ID, skipping migrations"
-          fi
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

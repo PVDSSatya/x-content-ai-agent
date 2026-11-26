@@ -531,19 +531,19 @@ Return scored evaluations with weighted_total and decision.`;
 
     // Calculate weighted total
     const weightedTotal =
-      hookStrength * this.weights.hook_strength +
-      originality * this.weights.originality +
-      factualAccuracy * this.weights.factual_accuracy +
-      audienceRelevance * this.weights.audience_relevance +
-      clarityReadability * this.weights.clarity_readability +
-      shareability * this.weights.shareability +
-      brandAlignment * this.weights.brand_alignment;
+      hookStrength * (this.weights.hook_strength ?? 0.2) +
+      originality * (this.weights.originality ?? 0.2) +
+      factualAccuracy * (this.weights.factual_accuracy ?? 0.2) +
+      audienceRelevance * (this.weights.audience_relevance ?? 0.15) +
+      clarityReadability * (this.weights.clarity_readability ?? 0.1) +
+      shareability * (this.weights.shareability ?? 0.1) +
+      brandAlignment * (this.weights.brand_alignment ?? 0.05);
 
     // Determine decision
     let decision: z.infer<typeof EvaluationResultSchema>["decision"] = "rewrite";
-    if (weightedTotal >= this.thresholds.excellent) decision = "excellent";
-    else if (weightedTotal >= this.thresholds.ready_for_review) decision = "ready_for_review";
-    else if (weightedTotal >= this.thresholds.requires_rewriting) decision = "rewrite";
+    if (weightedTotal >= (this.thresholds.excellent ?? 90)) decision = "excellent";
+    else if (weightedTotal >= (this.thresholds.ready_for_review ?? 85)) decision = "ready_for_review";
+    else if (weightedTotal >= (this.thresholds.requires_rewriting ?? 70)) decision = "rewrite";
     else decision = "reject";
 
     // Mandatory gates
@@ -620,6 +620,7 @@ Return scored evaluations with weighted_total and decision.`;
           eval_.rewrite_attempts = attempts + 1;
           eval_.rewrite_notes = `Rewrite ${attempts + 1}: ${scoredEval[0].rewrite_notes}`;
         }
+        attempts++;
       }
 
       results[i] = eval_;
@@ -640,8 +641,9 @@ Return scored evaluations with weighted_total and decision.`;
       if (weakness.includes("hook")) {
         // Strengthen hook: make first line more specific
         const lines = text.split("\n").filter((l) => l.trim());
-        if (lines.length > 0) {
-          lines[0] = this.strengthenHook(lines[0], variation.core_insight || "");
+        const firstLine = lines[0];
+        if (firstLine !== undefined) {
+          lines[0] = this.strengthenHook(firstLine, variation.core_insight || "");
           text = lines.join("\n");
         }
       }

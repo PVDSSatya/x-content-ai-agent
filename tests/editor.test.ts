@@ -156,13 +156,13 @@ describe("EditorAgent", () => {
     const result = await editor.evaluate(input);
 
     expect(result.evaluation_results.length).toBe(2);
-    expect(result.evaluation_results[0].fact_check.overall).toBe("passed");
-    expect(result.evaluation_results[0].platform_compliance.status).toBe("compliant");
+    expect(result.evaluation_results[0]?.fact_check.overall).toBe("passed");
+    expect(result.evaluation_results[0]?.platform_compliance.status).toBe("compliant");
   });
 
   it("should fail fact-check for hallucinated claims", async () => {
     const badVariation = {
-      ...mockVariations[0],
+      ...mockVariations[0]!,
       variation_id: "var-bad",
       post_text: "Claude 3.5 Sonnet achieves 99.9% accuracy on all benchmarks. GPT-5 will be released next week with 10x performance.",
       character_count: 120,
@@ -226,15 +226,15 @@ describe("EditorAgent", () => {
 
     const result = await editor.evaluate(input);
 
-    expect(result.evaluation_results[0].fact_check.overall).toBe("failed");
-    expect(result.evaluation_results[0].decision).toBe("reject");
+    expect(result.evaluation_results[0]?.fact_check.overall).toBe("failed");
+    expect(result.evaluation_results[0]?.decision).toBe("reject");
     // When only one variation exists and it's rejected, the evaluation result should show reject
-    expect(result.evaluation_results[0].decision).toBe("reject");
+    expect(result.evaluation_results[0]?.decision).toBe("reject");
   });
 
   it("should reject non-compliant posts (over character limit)", async () => {
     const longVariation = {
-      ...mockVariations[0],
+      ...mockVariations[0]!,
       variation_id: "var-long",
       post_text: "A".repeat(300), // Over 280 limit
       character_count: 300,
@@ -294,13 +294,13 @@ describe("EditorAgent", () => {
 
     const result = await editor.evaluate(input);
 
-    expect(result.evaluation_results[0].platform_compliance.status).toBe("non_compliant");
-    expect(result.evaluation_results[0].decision).toBe("reject");
+    expect(result.evaluation_results[0]?.platform_compliance.status).toBe("non_compliant");
+    expect(result.evaluation_results[0]?.decision).toBe("reject");
   });
 
   it("should reject posts with prohibited expressions", async () => {
     const badVariation = {
-      ...mockVariations[0],
+      ...mockVariations[0]!,
       variation_id: "var-prohibited",
       post_text: "This game-changing AI will 10x your productivity. Crush it with revolutionary technology!",
       character_count: 95,
@@ -360,8 +360,8 @@ describe("EditorAgent", () => {
 
     const result = await editor.evaluate(input);
 
-    expect(result.evaluation_results[0].platform_compliance.status).toBe("non_compliant");
-    expect(result.evaluation_results[0].decision).toBe("reject");
+    expect(result.evaluation_results[0]?.platform_compliance.status).toBe("non_compliant");
+    expect(result.evaluation_results[0]?.decision).toBe("reject");
   });
 
   it("should detect similarity to existing drafts", async () => {
@@ -374,7 +374,7 @@ describe("EditorAgent", () => {
     ];
 
     const similarVariation = {
-      ...mockVariations[0],
+      ...mockVariations[0]!,
       variation_id: "var-similar",
       post_text: "AI makes prototyping faster. But it makes deciding what deserves production more important. The bottleneck shifted from building to judging. Every team needs a production checklist.",
       character_count: 250,
@@ -434,8 +434,8 @@ describe("EditorAgent", () => {
 
     const result = await editor.evaluate(input);
 
-    expect(result.evaluation_results[0].similarity_check.flagged).toBe(true);
-    expect(result.evaluation_results[0].editorial_scores.originality).toBeLessThan(50);
+    expect(result.evaluation_results[0]?.similarity_check.flagged).toBe(true);
+    expect(result.evaluation_results[0]?.editorial_scores.originality).toBeLessThan(50);
   });
 
   it("should select best variation based on scores", async () => {

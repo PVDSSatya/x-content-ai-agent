@@ -24,10 +24,15 @@ import { factCheckingService } from "./services/fact-checking";
 import { deduplicationService } from "./services/deduplication";
 import { brandMemoryService } from "./services/brand-memory";
 import { contentScoringService } from "./services/content-scoring";
+import { ContentGenerationWorkflow } from "./workflows/content-generation";
+
+export { ContentGenerationWorkflow };
 
 // Environment bindings
 export interface Env {
   DB: D1Database;
+  CONTENT_GENERATION?: Workflow;
+  GITHUB_TOKEN?: string;
   OPENROUTER_API_KEY: string;
   OPENROUTER_MODEL: string;
   OPENROUTER_FALLBACK_MODEL: string;
@@ -285,6 +290,9 @@ async function runContentGenerationPipeline(
   }
 
   const selectedTopic = topics[0];
+  if (!selectedTopic) {
+    throw new Error("No research topics found");
+  }
 
   // Viral analysis (mock)
   const viralAnalyst = new ViralAnalystAgent(ai);
@@ -343,7 +351,15 @@ async function runContentGenerationPipeline(
     maxRewriteAttempts: 2,
   });
 
-  return editorOutput.final_draft;
+  const now = Date.now();
+  return {
+    ...editorOutput.final_draft,
+    id: `draft-${now}-${Math.random().toString(36).slice(2, 11)}`,
+    generation_mode: input.mode,
+    input_parameters: input,
+    created_at: now,
+    updated_at: now,
+  };
 }
 
 function getMockResearchItems(mode: string) {

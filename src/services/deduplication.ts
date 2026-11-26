@@ -118,17 +118,31 @@ export class DeduplicationService {
     return titleSim * 0.5 + categoryMatch * 0.2 + factsSim * 0.3;
   }
 
+  private tokenize(text: string): Set<string> {
+    const stopwords = new Set([
+      "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for",
+      "of", "with", "by", "from", "is", "are", "was", "were", "be", "been",
+      "it", "this", "that", "as", "every", "what", "more",
+    ]);
+    return new Set(
+      text
+        .toLowerCase()
+        .replace(/[^\w.\s-]/g, " ")
+        .split(/\s+/)
+        .map((w) => w.replace(/^[.-]+|[.-]+$/g, ""))
+        .filter((w) => w.length >= 2 && !stopwords.has(w))
+    );
+  }
+
   private calculateTitleSimilarity(title1: string, title2: string): number {
-    const words1 = new Set(title1.toLowerCase().split(/\s+/).filter((w) => w.length > 3));
-    const words2 = new Set(title2.toLowerCase().split(/\s+/).filter((w) => w.length > 3));
+    const words1 = this.tokenize(title1);
+    const words2 = this.tokenize(title2);
 
     if (words1.size === 0 && words2.size === 0) return 1;
     if (words1.size === 0 || words2.size === 0) return 0;
 
     const intersection = new Set([...words1].filter((w) => words2.has(w)));
-    const union = new Set([...words1, ...words2]);
-
-    return intersection.size / union.size;
+    return (2 * intersection.size) / (words1.size + words2.size);
   }
 
   private calculateFactsSimilarity(facts1: string[], facts2: string[]): number {
@@ -149,16 +163,14 @@ export class DeduplicationService {
   }
 
   private calculateTextSimilarity(text1: string, text2: string): number {
-    const words1 = new Set(text1.toLowerCase().split(/\s+/).filter((w) => w.length > 3));
-    const words2 = new Set(text2.toLowerCase().split(/\s+/).filter((w) => w.length > 3));
+    const words1 = this.tokenize(text1);
+    const words2 = this.tokenize(text2);
 
     if (words1.size === 0 && words2.size === 0) return 1;
     if (words1.size === 0 || words2.size === 0) return 0;
 
     const intersection = new Set([...words1].filter((w) => words2.has(w)));
-    const union = new Set([...words1, ...words2]);
-
-    return intersection.size / union.size;
+    return (2 * intersection.size) / (words1.size + words2.size);
   }
 
   // Generate content hash for quick duplicate detection
@@ -189,11 +201,15 @@ export class DeduplicationService {
 
     for (let i = 0; i < items.length; i++) {
       for (let j = i + 1; j < items.length; j++) {
-        const similarity = this.calculateTextSimilarity(items[i].text, items[j].text);
+        const item1 = items[i];
+        const item2 = items[j];
+        if (!item1 || !item2) continue;
+
+        const similarity = this.calculateTextSimilarity(item1.text, item2.text);
         if (similarity >= threshold) {
           duplicates.push({
-            item1: items[i],
-            item2: items[j],
+            item1,
+            item2,
             similarity,
           });
         }

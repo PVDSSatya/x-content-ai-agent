@@ -19,23 +19,50 @@
     {
       "name": "content-generation",
       "binding": "CONTENT_GENERATION",
-      "class_name": "ContentGenerationWorkflow",
-      "script_name": "src/workflows/content-generation.ts"
+      "class_name": "ContentGenerationWorkflow"
     }
   ],
   "observability": {
     "enabled": true
   },
-  "environments": {
+  "env": {
     "staging": {
       "vars": {
         "ENVIRONMENT": "staging"
-      }
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "x-content-agent-staging",
+          "database_id": "your-staging-database-id-here"
+        }
+      ],
+      "workflows": [
+        {
+          "name": "content-generation-staging",
+          "binding": "CONTENT_GENERATION",
+          "class_name": "ContentGenerationWorkflow"
+        }
+      ]
     },
     "production": {
       "vars": {
         "ENVIRONMENT": "production"
-      }
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "x-content-agent",
+          "database_id": "your-database-id-here"
+        }
+      ],
+      "workflows": [
+        {
+          "name": "content-generation",
+          "binding": "CONTENT_GENERATION",
+          "class_name": "ContentGenerationWorkflow"
+        }
+      ]
     }
   }
 }

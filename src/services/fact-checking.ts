@@ -69,7 +69,7 @@ export class FactCheckingService {
     // Determine overall status
     const hasFailed = verifiedClaims.some((c) => c.verification_status === "contradicted");
     const hasUnverified = verifiedClaims.some((c) => c.verification_status === "unverified");
-    const hasSpeculative = verifiedClaims.some((c) => c.verification_status === "speculative" && c.type !== "prediction");
+    const hasSpeculative = verifiedClaims.some((c) => c.verification_status === "speculative");
 
     let overallStatus: FactCheckResult["overall_status"] = "passed";
     if (hasFailed) overallStatus = "failed";
@@ -138,6 +138,17 @@ export class FactCheckingService {
     verifiedFacts: string[],
     sourceUrls: string[]
   ): Promise<Claim> {
+    // Check for contradictions first so opposing claims aren't falsely marked verified
+    for (const fact of verifiedFacts) {
+      if (this.claimContradictsFact(claim.text, fact)) {
+        return {
+          ...claim,
+          verification_status: "contradicted",
+          confidence: 0.1,
+        };
+      }
+    }
+
     // Check against verified facts
     for (const fact of verifiedFacts) {
       if (this.claimMatchesFact(claim.text, fact)) {
@@ -150,23 +161,19 @@ export class FactCheckingService {
       }
     }
 
-    // Check for contradictions
-    for (const fact of verifiedFacts) {
-      if (this.claimContradictsFact(claim.text, fact)) {
+    // For predictions, mark as speculative if not clearly labeled, verified if clearly labeled
+    if (claim.type === "prediction") {
+      if (!this.isClearlyLabeledPrediction(claim.text)) {
         return {
           ...claim,
-          verification_status: "contradicted",
-          confidence: 0.1,
+          verification_status: "speculative",
+          confidence: Math.min(claim.confidence, 0.5),
         };
       }
-    }
-
-    // For predictions and opinions, mark as speculative if not clearly labeled
-    if (claim.type === "prediction" && !this.isClearlyLabeledPrediction(claim.text)) {
       return {
         ...claim,
-        verification_status: "speculative",
-        confidence: Math.min(claim.confidence, 0.5),
+        verification_status: "verified",
+        confidence: 0.7,
       };
     }
 
@@ -187,8 +194,22 @@ export class FactCheckingService {
   }
 
   private claimMatchesFact(claim: string, fact: string): boolean {
-    const claimWords = new Set(claim.toLowerCase().split(/\s+/).filter((w) => w.length > 3));
-    const factWords = new Set(fact.toLowerCase().split(/\s+/).filter((w) => w.length > 3));
+    const stopwords = new Set([
+      "is", "are", "was", "were", "be", "been", "has", "have", "had",
+      "the", "and", "or", "for", "with", "now", "much", "very", "this",
+      "that", "in", "on", "at", "to", "of", "by", "from", "as",
+    ]);
+    const tokenize = (s: string) =>
+      new Set(
+        s
+          .toLowerCase()
+          .replace(/[^\w.%\s-]/g, " ")
+          .split(/\s+/)
+          .filter((w) => w.length >= 2 && !stopwords.has(w))
+      );
+
+    const claimWords = tokenize(claim);
+    const factWords = tokenize(fact);
 
     if (claimWords.size === 0 || factWords.size === 0) return false;
 
@@ -204,7 +225,7 @@ export class FactCheckingService {
     const factLower = fact.toLowerCase();
 
     // Check for negation patterns
-    const negationPairs = [
+    const negationPairs: Array<[string, string]> = [
       ["increase", "decrease"],
       ["improve", "worsen"],
       ["better", "worse"],

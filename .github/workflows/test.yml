@@ -101,11 +101,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
       - name: Check Wrangler config
-        run: wrangler deploy --dry-run
+        run: |
+          npx wrangler deploy --dry-run
+          npx wrangler deploy --env staging --dry-run
+          npx wrangler deploy --env production --dry-run
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

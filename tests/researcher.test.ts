@@ -1,24 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ResearcherAgent } from "../src/agents/researcher";
 import { MockAIProvider } from "../src/integrations/openrouter";
-import type { RawResearchItem, ResearchTopic } from "../src/database/schema";
+import type { ResearchTopic } from "../src/database/schema";
+import type { RawResearchItem } from "../src/integrations/research";
 
 describe("ResearcherAgent", () => {
   let mockAI: MockAIProvider;
   let researcher: ResearcherAgent;
 
+  const primaryRawItem: RawResearchItem = {
+    id: "rss-1",
+    title: "Anthropic Releases Claude 3.5 Sonnet",
+    summary: "Anthropic announces Claude 3.5 Sonnet with computer use capability.",
+    url: "https://anthropic.com/news/claude-3-5-sonnet",
+    source: "rss",
+    source_name: "Anthropic Blog",
+    category: "ai-news",
+    credibility: 10,
+    published_at: Date.now() - 2 * 60 * 60 * 1000,
+  };
+
   const mockRawItems: RawResearchItem[] = [
-    {
-      id: "rss-1",
-      title: "Anthropic Releases Claude 3.5 Sonnet",
-      summary: "Anthropic announces Claude 3.5 Sonnet with computer use capability.",
-      url: "https://anthropic.com/news/claude-3-5-sonnet",
-      source: "rss",
-      source_name: "Anthropic Blog",
-      category: "ai-news",
-      credibility: 10,
-      published_at: Date.now() - 2 * 60 * 60 * 1000,
-    },
+    primaryRawItem,
     {
       id: "github-1",
       title: "browser-use: AI Browser Automation",
@@ -49,7 +52,7 @@ describe("ResearcherAgent", () => {
 
   it("should filter items by recency", async () => {
     const oldItem: RawResearchItem = {
-      ...mockRawItems[0],
+      ...primaryRawItem,
       id: "old-1",
       published_at: Date.now() - 100 * 60 * 60 * 1000, // 100 hours ago
     };
@@ -96,7 +99,7 @@ describe("ResearcherAgent", () => {
 
   it("should filter items by credibility threshold", async () => {
     const lowCredItem: RawResearchItem = {
-      ...mockRawItems[0],
+      ...primaryRawItem,
       id: "low-cred-1",
       credibility: 3, // Below threshold of 5
     };
@@ -140,7 +143,7 @@ describe("ResearcherAgent", () => {
 
   it("should deduplicate similar topics", async () => {
     const duplicateItem: RawResearchItem = {
-      ...mockRawItems[0],
+      ...primaryRawItem,
       id: "dup-1",
       title: "Anthropic Releases Claude 3.5 Sonnet with Computer Use", // Very similar
     };

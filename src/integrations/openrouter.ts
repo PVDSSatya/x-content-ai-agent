@@ -181,12 +181,26 @@ export class MockAIProvider implements AIProvider {
   }
 
   async complete<T>(request: AIRequest): Promise<AIResponse<T>> {
-    const key = JSON.stringify(request.messages.map((m) => m.content).join("|"));
+    const fullContent = request.messages.map((m) => m.content).join("|");
+    const key = JSON.stringify(fullContent);
+    const fullContentLower = fullContent.toLowerCase();
 
-    // Check for schema-specific response first
+    // Check for schema-specific response first, then exact prompt, then registered keyword keys
     const schemaName = request.schema?.constructor?.name || "";
     const schemaKey = `schema:${schemaName}`;
-    const response = this.responses.get(schemaKey) || this.responses.get(key) || this.responses.get("scoring") || this.getDefaultResponse(request);
+    let matchedKeywordResponse: unknown;
+    for (const [registeredKey, val] of this.responses.entries()) {
+      if (!registeredKey.startsWith("schema:") && registeredKey.length > 0 && fullContentLower.includes(registeredKey.toLowerCase())) {
+        matchedKeywordResponse = val;
+        break;
+      }
+    }
+    const response =
+      this.responses.get(schemaKey) ??
+      this.responses.get(key) ??
+      matchedKeywordResponse ??
+      this.responses.get("scoring") ??
+      this.getDefaultResponse(request);
 
     this.callLog.push({ request, response });
 

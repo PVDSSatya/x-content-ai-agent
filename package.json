@@ -9,7 +9,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:create": "wrangler d1 create x-content-agent",
-    "db:migrate": "wrangler d1 migrations apply x-content-agent",
+    "db:migrate": "wrangler d1 migrations apply x-content-agent --remote",
     "db:migrate:local": "wrangler d1 migrations apply x-content-agent --local",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit"

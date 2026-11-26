@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Env } from "../index";
 
 export const GitHubRepoSchema = z.object({
   id: z.number(),
@@ -200,7 +201,7 @@ export class GitHubIntegration {
   private getDateDaysAgo(days: number): string {
     const date = new Date();
     date.setDate(date.getDate() - days);
-    return date.toISOString().split("T")[0];
+    return date.toISOString().split("T")[0] ?? "";
   }
 }
 

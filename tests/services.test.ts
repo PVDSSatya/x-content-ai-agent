@@ -53,7 +53,7 @@ describe("DeduplicationService", () => {
 
     it("should detect duplicate topic by title similarity", () => {
       const newTopic: ResearchTopic = {
-        ...existingTopics[0],
+        ...existingTopics[0]!,
         id: "topic-new",
         topic: "Claude 3.5 Sonnet with Computer Use Released", // Very similar
         created_at: Date.now(),
@@ -67,7 +67,7 @@ describe("DeduplicationService", () => {
 
     it("should not flag different topics as duplicates", () => {
       const newTopic: ResearchTopic = {
-        ...existingTopics[0],
+        ...existingTopics[0]!,
         id: "topic-new",
         topic: "OpenAI GPT-5 Announcement Rumors", // Different topic
         category: "ai-news",
@@ -83,11 +83,11 @@ describe("DeduplicationService", () => {
 
     it("should ignore archived topics", () => {
       const archivedTopics = [
-        { ...existingTopics[0], status: "archived" as const },
+        { ...existingTopics[0]!, status: "archived" as const },
       ];
 
       const newTopic: ResearchTopic = {
-        ...existingTopics[0],
+        ...existingTopics[0]!,
         id: "topic-new",
         topic: "Claude 3.5 Sonnet Computer Use",
         created_at: Date.now(),
@@ -100,11 +100,11 @@ describe("DeduplicationService", () => {
 
     it("should ignore topics older than lookbackDays", () => {
       const oldTopics = [
-        { ...existingTopics[0], created_at: Date.now() - 60 * 24 * 60 * 60 * 1000 }, // 60 days ago
+        { ...existingTopics[0]!, created_at: Date.now() - 60 * 24 * 60 * 60 * 1000 }, // 60 days ago
       ];
 
       const newTopic: ResearchTopic = {
-        ...existingTopics[0],
+        ...existingTopics[0]!,
         id: "topic-new",
         topic: "Claude 3.5 Sonnet Computer Use",
         created_at: Date.now(),
@@ -230,7 +230,7 @@ describe("DeduplicationService", () => {
 
       const duplicates = service.findNearDuplicates(items, 0.85);
       expect(duplicates.length).toBeGreaterThanOrEqual(1);
-      expect(duplicates[0].similarity).toBeGreaterThanOrEqual(0.85);
+      expect(duplicates[0]?.similarity).toBeGreaterThanOrEqual(0.85);
     });
   });
 });
@@ -261,7 +261,7 @@ describe("BrandMemoryService", () => {
 
       const memories = service.getMemories("successful_framework");
       expect(memories.length).toBe(1);
-      expect(memories[0].id).toBe(memory.id);
+      expect(memories[0]?.id).toBe(memory.id);
     });
 
     it("should filter by type", () => {
@@ -283,10 +283,10 @@ describe("BrandMemoryService", () => {
         feedbackWeight: 0.15,
       });
 
-      limitedService.addMemory({ memory_type: "test", content: "Memory 1", source: "manual", confidence: 0.5 });
-      limitedService.addMemory({ memory_type: "test", content: "Memory 2", source: "manual", confidence: 0.6 });
-      limitedService.addMemory({ memory_type: "test", content: "Memory 3", source: "manual", confidence: 0.7 });
-      limitedService.addMemory({ memory_type: "test", content: "Memory 4", source: "manual", confidence: 0.8 }); // Should evict lowest
+      limitedService.addMemory({ memory_type: "writing_pattern", content: "Memory 1", source: "manual", confidence: 0.5 });
+      limitedService.addMemory({ memory_type: "writing_pattern", content: "Memory 2", source: "manual", confidence: 0.6 });
+      limitedService.addMemory({ memory_type: "writing_pattern", content: "Memory 3", source: "manual", confidence: 0.7 });
+      limitedService.addMemory({ memory_type: "writing_pattern", content: "Memory 4", source: "manual", confidence: 0.8 }); // Should evict lowest
 
       const memories = limitedService.getMemories();
       expect(memories.length).toBe(3);
@@ -401,7 +401,7 @@ describe("BrandMemoryService", () => {
   describe("markUsed", () => {
     it("should increment usage count and confidence", () => {
       const memory = service.addMemory({
-        memory_type: "test",
+        memory_type: "writing_pattern",
         content: "Test memory",
         source: "manual",
         confidence: 0.5,
@@ -454,7 +454,7 @@ describe("BrandMemoryService", () => {
     it("should apply confidence decay based on age", () => {
       const oldMemory: BrandMemory = {
         id: "old-1",
-        memory_type: "test",
+        memory_type: "writing_pattern",
         content: "Old memory",
         source: "manual",
         confidence: 0.9,

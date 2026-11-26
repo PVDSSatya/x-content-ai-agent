@@ -327,8 +327,8 @@ export class BrandMemoryService {
   }
 
   private calculateContentSimilarity(text1: string, text2: string): number {
-    const words1 = new Set(text1.toLowerCase().split(/\s+/).filter((w) => w.length > 3));
-    const words2 = new Set(text2.toLowerCase().split(/\s+/).filter((w) => w.length > 3));
+    const words1 = new Set(text1.toLowerCase().replace(/[^\w\s]/g, " ").split(/\s+/).filter((w) => w.length > 0));
+    const words2 = new Set(text2.toLowerCase().replace(/[^\w\s]/g, " ").split(/\s+/).filter((w) => w.length > 0));
 
     if (words1.size === 0 && words2.size === 0) return 1;
     if (words1.size === 0 || words2.size === 0) return 0;

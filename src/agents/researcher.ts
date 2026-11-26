@@ -20,20 +20,6 @@ export interface ResearcherConfig {
 export interface ResearcherInput {
   rawItems: RawResearchItem[];
   existingTopics: ResearchTopic[];
-  config: {
-    lookbackHours: number;
-    maxTopicsPerRun: number;
-    minNoveltyScore: number;
-    minFreshnessScore: number;
-    minRelevanceScore: number;
-    deduplicationThreshold: number;
-    requireSourceVerification: boolean;
-  };
-}
-
-export interface ResearcherInput {
-  rawItems: RawResearchItem[];
-  existingTopics: ResearchTopic[];
   config: ResearcherConfig;
 }
 

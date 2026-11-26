@@ -1,3 +1,4 @@
+import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from "cloudflare:workers";
 import type { Env } from "../index";
 import type { AIProvider } from "../integrations/openrouter";
 import type { ResearchTopic } from "../database/schema";
@@ -35,18 +36,16 @@ export interface WorkflowState {
   error: string | null;
 }
 
-export class ContentGenerationWorkflow {
-  private ai: AIProvider;
-  private env: Env;
-
-  constructor(env: Env) {
-    this.env = env;
-    this.ai = createAIProvider(env);
+export class ContentGenerationWorkflow extends WorkflowEntrypoint<Env, WorkflowInput> {
+  private getAI(): AIProvider {
+    return createAIProvider(this.env, this.env.ENABLE_MOCK_INTEGRATIONS === "true");
   }
 
-  async run(input: WorkflowInput): Promise<ContentDraft> {
+  override async run(event: WorkflowEvent<WorkflowInput>, step: WorkflowStep): Promise<ContentDraft> {
+    const input = event.payload;
+
     // Step 1: Research
-    const researchTopics = await this.runResearch(input);
+    const researchTopics = await step.do<any>("research", () => this.runResearch(input));
 
     if (researchTopics.length === 0) {
       throw new Error("No relevant research topics found");
@@ -56,25 +55,29 @@ export class ContentGenerationWorkflow {
     const selectedTopic = this.selectTopic(researchTopics, input);
 
     // Step 3: Viral Content Analysis
-    const viralAnalysis = await this.runViralAnalysis(selectedTopic);
+    const viralAnalysis = await step.do<any>("viral-analysis", () => this.runViralAnalysis(selectedTopic));
 
     // Step 4: Content Strategy
-    const contentStrategy = await this.runStrategy(selectedTopic, viralAnalysis);
+    const contentStrategy = await step.do<any>("strategy", () => this.runStrategy(selectedTopic, viralAnalysis));
 
     // Step 5: Copywriting
-    const copywriterOutput = await this.runCopywriting(contentStrategy, selectedTopic);
+    const copywriterOutput = await step.do<any>("copywriting", () =>
+      this.runCopywriting(contentStrategy, selectedTopic)
+    );
 
     // Step 6: Editing & Fact-Checking
-    const editorOutput = await this.runEditing(copywriterOutput, selectedTopic, contentStrategy);
+    const editorOutput = await step.do<any>("editing", () =>
+      this.runEditing(copywriterOutput, selectedTopic, contentStrategy)
+    );
 
     // Step 7: Save Draft
-    const finalDraft = await this.saveDraft(editorOutput, input);
+    const finalDraft = await step.do<any>("save-draft", () => this.saveDraft(editorOutput, input));
 
     return finalDraft;
   }
 
   private async runResearch(input: WorkflowInput): Promise<ResearchTopic[]> {
-    const researcher = new ResearcherAgent(this.ai, {
+    const researcher = new ResearcherAgent(this.getAI(), {
       lookbackHours: parseInt(this.env.RESEARCH_LOOKBACK_HOURS || "48"),
       maxTopicsPerRun: parseInt(this.env.RESEARCH_MAX_TOPICS_PER_RUN || "20"),
       minNoveltyScore: parseFloat(this.env.RESEARCH_MIN_NOVELTY_SCORE || "0.6"),
@@ -201,8 +204,12 @@ export class ContentGenerationWorkflow {
   }
 
   private selectTopic(topics: ResearchTopic[], input: WorkflowInput): ResearchTopic {
+    const firstTopic = topics[0];
+    if (!firstTopic) {
+      throw new Error("No relevant research topics found");
+    }
     if (input.mode === "topic" && input.topic) {
-      return topics.find((t) => t.topic.toLowerCase().includes(input.topic!.toLowerCase())) || topics[0];
+      return topics.find((t) => t.topic.toLowerCase().includes(input.topic!.toLowerCase())) ?? firstTopic;
     }
     return topics.reduce((best, current) =>
       current.content_opportunity_score > best.content_opportunity_score ? current : best
@@ -210,7 +217,7 @@ export class ContentGenerationWorkflow {
   }
 
   private async runViralAnalysis(topic: ResearchTopic): Promise<any> {
-    const viralAnalyst = new ViralAnalystAgent(this.ai);
+    const viralAnalyst = new ViralAnalystAgent(this.getAI());
 
     const sourcePosts = [
       {
@@ -235,7 +242,7 @@ export class ContentGenerationWorkflow {
   }
 
   private async runStrategy(topic: ResearchTopic, viralAnalysis: any): Promise<any> {
-    const strategist = new StrategistAgent(this.ai);
+    const strategist = new StrategistAgent(this.getAI());
     const brandConfig = await this.loadBrandConfig();
 
     return strategist.strategize({
@@ -247,7 +254,7 @@ export class ContentGenerationWorkflow {
   }
 
   private async runCopywriting(contentStrategy: any, topic: ResearchTopic): Promise<any> {
-    const copywriter = new CopywriterAgent(this.ai);
+    const copywriter = new CopywriterAgent(this.getAI());
     const brandConfig = await this.loadBrandConfig();
 
     return copywriter.write({
@@ -269,7 +276,7 @@ export class ContentGenerationWorkflow {
   }
 
   private async runEditing(copywriterOutput: any, topic: ResearchTopic, contentStrategy: any): Promise<any> {
-    const editor = new EditorAgent(this.ai, await this.loadEditorConfig());
+    const editor = new EditorAgent(this.getAI(), await this.loadEditorConfig());
     const existingDrafts = await this.loadExistingDrafts();
 
     return editor.evaluate({
@@ -397,6 +404,3 @@ export class ContentGenerationWorkflow {
     return fullDraft;
   }
 }
-
-// Cloudflare Workflow entry point (for future use with Cloudflare Workflows)
-export { ContentGenerationWorkflow as WorkflowEntrypoint };

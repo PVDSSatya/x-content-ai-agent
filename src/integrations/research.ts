@@ -83,8 +83,14 @@ export class ResearchAggregator {
     for (const category of this.config.categories) {
       const rssItems = await this.rss.fetchFeedByCategory(category, this.config.lookbackHours);
       for (const item of rssItems.slice(0, this.config.maxItemsPerSource)) {
-        if (item.source_credibility >= this.config.credibilityThreshold) {
-          allItems.push(this.normalizeRSSItem(item, category));
+        const credibility = item.source_credibility ?? 0;
+        if (credibility >= this.config.credibilityThreshold) {
+          allItems.push(this.normalizeRSSItem({
+            ...item,
+            source_feed: item.source_feed ?? "Unknown",
+            source_category: item.source_category ?? category,
+            source_credibility: credibility,
+          }, category));
         }
       }
     }

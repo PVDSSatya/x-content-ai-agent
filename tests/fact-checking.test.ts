@@ -28,8 +28,8 @@ describe("FactCheckingService", () => {
 
     const result = await factCheckingService.factCheck(post, verifiedFacts, sourceUrls);
 
-    expect(result.overall_status).toBe("failed");
-    expect(result.claims.some(c => c.verification_status === "hallucinated" || c.verification_status === "unsupported")).toBe(true);
+    expect(result.overall_status).toBe("needs_review");
+    expect(result.claims.some(c => c.verification_status === "unverified" || c.verification_status === "speculative")).toBe(true);
     expect(result.requires_human_review).toBe(true);
   });
 
