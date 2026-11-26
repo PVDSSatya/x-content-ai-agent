@@ -90,6 +90,15 @@ app.get("/", (c) => {
   });
 });
 
+// Global error handler so unhandled errors return structured JSON
+app.onError((err, c) => {
+  console.error("Unhandled error:", err);
+  return c.json(
+    { error: err instanceof Error ? err.message : "Internal Server Error" },
+    500
+  );
+});
+
 // Auth middleware
 app.use("/api/*", async (c, next) => {
   const authHeader = c.req.header("Authorization");
@@ -99,25 +108,30 @@ app.use("/api/*", async (c, next) => {
     return c.json({ error: "Unauthorized" }, 401);
   }
 
-  // Initialize AI provider
-  const ai = createAIProvider(c.env, c.env.ENABLE_MOCK_INTEGRATIONS === "true");
-  c.set("ai", ai);
   c.set("userId", "system"); // In production, extract from JWT
 
   await next();
 });
 
+function getAIProvider(env: Env): AIProvider {
+  return createAIProvider(env, env.ENABLE_MOCK_INTEGRATIONS === "true");
+}
+
 // Health check
 app.get("/api/health", (c) => {
+  const hasAI = Boolean(c.env.OPENROUTER_API_KEY) || c.env.ENABLE_MOCK_INTEGRATIONS === "true";
+  const services = {
+    database: c.env.DB ? "healthy" : "degraded",
+    ai_provider: hasAI ? "healthy" : "degraded",
+    workflow: c.env.CONTENT_GENERATION ? "healthy" : "degraded",
+  } as const;
+  const allHealthy = Object.values(services).every((s) => s === "healthy");
+
   const response: z.infer<typeof HealthCheckResponseSchema> = {
-    status: "healthy",
+    status: allHealthy ? "healthy" : "degraded",
     timestamp: Date.now(),
     version: "1.0.0",
-    services: {
-      database: "healthy",
-      ai_provider: "healthy",
-      workflow: "healthy",
-    },
+    services,
   };
   return c.json(response);
 });
@@ -125,9 +139,9 @@ app.get("/api/health", (c) => {
 // Generate content endpoint
 app.post("/api/generate", zValidator("json", GenerateContentRequestSchema), async (c) => {
   const input = c.req.valid("json");
-  const ai = c.get("ai");
 
   try {
+    const ai = getAIProvider(c.env);
     // For now, run simplified pipeline inline
     // In production, this would trigger the Cloudflare Workflow
     const draft = await runContentGenerationPipeline(ai, input, c.env);
@@ -223,7 +237,7 @@ app.get("/api/analytics/performance", async (c) => {
   const performanceData: PerformanceData[] = [];
   const feedbackData: Feedback[] = [];
 
-  const analyst = new PerformanceAnalystAgent(c.get("ai"));
+  const analyst = new PerformanceAnalystAgent(getAIProvider(c.env));
   const analysis = await analyst.analyze({
     performanceData,
     feedbackData,
@@ -242,7 +256,7 @@ app.get("/api/research/topics", async (c) => {
 
 // Trigger research manually
 app.post("/api/research/trigger", async (c) => {
-  const ai = c.get("ai");
+  const ai = getAIProvider(c.env);
   const researcher = new ResearcherAgent(ai, {
     lookbackHours: 48,
     maxTopicsPerRun: 20,

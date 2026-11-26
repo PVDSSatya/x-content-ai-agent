@@ -59,6 +59,11 @@ export class OpenRouterProvider implements AIProvider {
   }
 
   static fromEnv(env: Env): OpenRouterProvider {
+    if (!env.OPENROUTER_API_KEY) {
+      throw new Error(
+        "OPENROUTER_API_KEY is not configured. Set it as a Worker secret or set ENABLE_MOCK_INTEGRATIONS=true."
+      );
+    }
     return new OpenRouterProvider({
       apiKey: env.OPENROUTER_API_KEY,
       baseURL: "https://openrouter.ai/api/v1",
