@@ -291,16 +291,16 @@ npm run test:watch
 ### `.dev.vars` (Required)
 ```bash
 OPENROUTER_API_KEY=your-key
-OPENROUTER_MODEL=anthropic/claude-3.5-sonnet
-OPENROUTER_FALLBACK_MODEL=google/gemini-1.5-flash
+OPENROUTER_MODEL=google/gemma-4-31b-it:free
+OPENROUTER_FALLBACK_MODEL=openrouter/free
 API_KEY=your-api-key
 JWT_SECRET=your-jwt-secret
 ```
 
 ### Free Models on OpenRouter
-- `google/gemma-2-9b-it:free`
-- `microsoft/phi-3-mini-128k-instruct:free`
-- `meta-llama/llama-3.1-8b-instruct:free`
+- `google/gemma-4-31b-it:free`
+- `google/gemma-4-26b-a4b-it:free`
+- `openrouter/free`
 
 ## Deployment Checklist
 

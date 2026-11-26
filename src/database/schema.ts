@@ -2,20 +2,20 @@ import { z } from "zod";
 
 // Research topic schema
 export const ResearchTopicSchema = z.object({
-  id: z.string(),
+  id: z.string().default(() => `topic-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
   topic: z.string(),
   category: z.string(),
   summary: z.string(),
   verified_facts: z.array(z.string()),
   source_urls: z.array(z.string().url()),
-  source_publication_dates: z.array(z.string()),
+  source_publication_dates: z.array(z.string()).default([]),
   audience_relevance: z.number().min(0).max(1),
   novelty_score: z.number().min(0).max(1),
   freshness_score: z.number().min(0).max(1),
   content_opportunity_score: z.number().min(0).max(1),
-  status: z.enum(["discovered", "analyzed", "used", "archived"]),
-  created_at: z.number(),
-  updated_at: z.number(),
+  status: z.enum(["discovered", "analyzed", "used", "archived"]).default("discovered"),
+  created_at: z.number().default(() => Date.now()),
+  updated_at: z.number().default(() => Date.now()),
   metadata: z.record(z.unknown()).optional(),
 });
 

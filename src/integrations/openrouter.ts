@@ -67,8 +67,8 @@ export class OpenRouterProvider implements AIProvider {
     return new OpenRouterProvider({
       apiKey: env.OPENROUTER_API_KEY,
       baseURL: "https://openrouter.ai/api/v1",
-      defaultModel: env.OPENROUTER_MODEL || "anthropic/claude-3.5-sonnet",
-      fallbackModel: env.OPENROUTER_FALLBACK_MODEL || "google/gemini-1.5-flash",
+      defaultModel: env.OPENROUTER_MODEL || "google/gemma-4-31b-it:free",
+      fallbackModel: env.OPENROUTER_FALLBACK_MODEL || "openrouter/free",
       maxTokensPerRequest: parseInt(env.AI_MAX_TOKENS_PER_REQUEST || "4000"),
       maxTotalTokensPerRun: parseInt(env.AI_MAX_TOTAL_TOKENS_PER_RUN || "50000"),
       temperature: parseFloat(env.AI_TEMPERATURE || "0.7"),
@@ -78,16 +78,36 @@ export class OpenRouterProvider implements AIProvider {
   }
 
   async complete<T>(request: AIRequest): Promise<AIResponse<T>> {
-    const model = request.model || this.config.defaultModel;
-    const temperature = request.temperature ?? this.config.temperature;
-    const maxTokens = request.maxTokens ?? this.config.maxTokensPerRequest;
+    const primaryModel = request.model || this.config.defaultModel;
 
     // Check token budget
     if (this.totalTokensUsed >= this.config.maxTotalTokensPerRun) {
       throw new Error(`Token budget exceeded: ${this.totalTokensUsed}/${this.config.maxTotalTokensPerRun}`);
     }
 
+    try {
+      return await this.completeWithModel<T>(primaryModel, request);
+    } catch (primaryError) {
+      // Do not fall back on invalid credentials
+      if (primaryError instanceof OpenAI.APIError && (primaryError.status === 401 || primaryError.status === 403)) {
+        throw primaryError;
+      }
+
+      const fallback = this.config.fallbackModel;
+      if (fallback && fallback !== primaryModel) {
+        console.warn(`Primary model "${primaryModel}" failed, falling back to "${fallback}":`, primaryError);
+        return await this.completeWithModel<T>(fallback, request);
+      }
+
+      throw primaryError;
+    }
+  }
+
+  private async completeWithModel<T>(model: string, request: AIRequest): Promise<AIResponse<T>> {
+    const temperature = request.temperature ?? this.config.temperature;
+    const maxTokens = request.maxTokens ?? this.config.maxTokensPerRequest;
     const messages = request.messages;
+    let useJsonFormat = request.responseFormat === "json";
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= this.config.maxRetries; attempt++) {
@@ -97,39 +117,33 @@ export class OpenRouterProvider implements AIProvider {
           messages,
           temperature,
           max_tokens: maxTokens,
-          response_format: request.responseFormat === "json" ? { type: "json_object" } : undefined,
+          response_format: useJsonFormat ? { type: "json_object" } : undefined,
         });
 
         const content = completion.choices[0]?.message?.content || "";
         const usage = completion.usage;
+        const promptTokens = usage?.prompt_tokens ?? 0;
+        const completionTokens = usage?.completion_tokens ?? 0;
+        const totalTokens = usage?.total_tokens ?? (promptTokens + completionTokens);
 
-        if (!usage) {
-          throw new Error("No usage data returned from API");
-        }
-
-        this.totalTokensUsed += usage.total_tokens;
+        this.totalTokensUsed += totalTokens;
         this.requestCount++;
 
         let parsedContent: T = content as T;
 
         // Parse and validate JSON if schema provided
         if (request.responseFormat === "json" && request.schema) {
-          try {
-            const jsonContent = JSON.parse(content);
-            parsedContent = request.schema.parse(jsonContent);
-          } catch (parseError) {
-            throw new Error(`Failed to parse/validate JSON response: ${parseError}`);
-          }
+          parsedContent = this.parseJsonResponse<T>(content, request.schema);
         }
 
         return {
           content: parsedContent,
           usage: {
-            promptTokens: usage.prompt_tokens,
-            completionTokens: usage.completion_tokens,
-            totalTokens: usage.total_tokens,
+            promptTokens,
+            completionTokens,
+            totalTokens,
           },
-          model: completion.model,
+          model: completion.model || model,
           finishReason: completion.choices[0]?.finish_reason || "unknown",
         };
       } catch (error) {
@@ -140,9 +154,14 @@ export class OpenRouterProvider implements AIProvider {
           throw error;
         }
 
-        // Don't retry on certain HTTP errors
         if (error instanceof OpenAI.APIError) {
-          if (error.status === 400 || error.status === 401 || error.status === 403) {
+          // If provider rejects response_format, retry once without it
+          if (error.status === 400 && useJsonFormat) {
+            useJsonFormat = false;
+            continue;
+          }
+          // Don't retry on permanent auth/client/missing-model errors
+          if (error.status === 400 || error.status === 401 || error.status === 403 || error.status === 404) {
             throw error;
           }
         }
@@ -156,6 +175,57 @@ export class OpenRouterProvider implements AIProvider {
     }
 
     throw lastError || new Error("Max retries exceeded");
+  }
+
+  private parseJsonResponse<T>(rawContent: string, schema: z.ZodSchema): T {
+    try {
+      const cleaned = this.extractJsonString(rawContent);
+      let jsonContent: unknown = JSON.parse(cleaned);
+
+      // Unwrap `{ topics: [...] }` style objects when the schema expects a top-level array
+      if (
+        schema instanceof z.ZodArray &&
+        jsonContent &&
+        typeof jsonContent === "object" &&
+        !Array.isArray(jsonContent)
+      ) {
+        const arrayProp = Object.values(jsonContent as Record<string, unknown>).find(Array.isArray);
+        if (arrayProp) {
+          jsonContent = arrayProp;
+        }
+      }
+
+      return schema.parse(jsonContent) as T;
+    } catch (parseError) {
+      throw new Error(`Failed to parse/validate JSON response: ${parseError}`);
+    }
+  }
+
+  private extractJsonString(raw: string): string {
+    const trimmed = raw.trim();
+    const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    if (fenceMatch?.[1]) {
+      return fenceMatch[1].trim();
+    }
+
+    const firstObj = trimmed.indexOf("{");
+    const firstArr = trimmed.indexOf("[");
+    let start = -1;
+    let end = -1;
+
+    if (firstArr !== -1 && (firstObj === -1 || firstArr < firstObj)) {
+      start = firstArr;
+      end = trimmed.lastIndexOf("]");
+    } else if (firstObj !== -1) {
+      start = firstObj;
+      end = trimmed.lastIndexOf("}");
+    }
+
+    if (start !== -1 && end > start) {
+      return trimmed.slice(start, end + 1);
+    }
+
+    return trimmed;
   }
 
   private sleep(ms: number): Promise<void> {

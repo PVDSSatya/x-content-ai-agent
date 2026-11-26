@@ -1,37 +1,37 @@
 {
   "ai_models": {
     "researcher": {
-      "model": "anthropic/claude-3.5-sonnet",
+      "model": "anthropic/claude-sonnet-4.6",
       "temperature": 0.3,
       "max_tokens": 4000,
       "purpose": "Factual research and topic discovery"
     },
     "viral_analyst": {
-      "model": "anthropic/claude-3.5-sonnet",
+      "model": "anthropic/claude-sonnet-4.6",
       "temperature": 0.5,
       "max_tokens": 4000,
       "purpose": "Content framework analysis and reverse engineering"
     },
     "strategist": {
-      "model": "anthropic/claude-3.5-sonnet",
+      "model": "anthropic/claude-sonnet-4.6",
       "temperature": 0.4,
       "max_tokens": 3000,
       "purpose": "Content strategy and format selection"
     },
     "copywriter": {
-      "model": "anthropic/claude-3.5-sonnet",
+      "model": "anthropic/claude-sonnet-4.6",
       "temperature": 0.7,
       "max_tokens": 4000,
       "purpose": "Creative post generation with multiple variations"
     },
     "editor": {
-      "model": "anthropic/claude-3.5-sonnet",
+      "model": "anthropic/claude-sonnet-4.6",
       "temperature": 0.2,
       "max_tokens": 4000,
       "purpose": "Fact-checking and editorial scoring"
     },
     "performance_analyst": {
-      "model": "anthropic/claude-3.5-sonnet",
+      "model": "anthropic/claude-sonnet-4.6",
       "temperature": 0.3,
       "max_tokens": 3000,
       "purpose": "Performance analysis and pattern identification"

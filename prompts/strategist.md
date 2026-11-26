@@ -58,7 +58,7 @@ Return JSON:
 {
   "content_strategy": {
     "topic_id": "research-topic-id",
-    "selected_format": "contrarian_opinion|educational_insight|...",
+    "selected_format": "punchy_one_liner|contrarian_opinion|educational_insight|breaking_technology_news|technical_explanation|curiosity_driven_post|developer_humour|relatable_observation|open_source_tool_discovery|comparison|future_prediction|storytelling|debate_question|numbered_list|long_form_post",
     "recommended_framework": "F1|F2|F3|F4|F5|F6|F7|F8",
     "hook_type": "unexpected_truth|cost_reframing|founder_observation|diagnostic|outcome_first",
     "target_audience_segment": "AI engineers building production systems",
@@ -71,7 +71,7 @@ Return JSON:
         "reasoning": "Why this angle works"
       }
     ],
-    "content_pillar": "Original Insights|Practical AI Education|Build-in-Public Demos|Case Studies|Service Conversations",
+    "content_pillar": "Original Insights|Practical AI Education|Build-in-Public Demos|Case Studies / Breakdowns|Service Conversations",
     "duplication_check": {
       "similar_topics_found": [],
       "is_duplicate": false,
