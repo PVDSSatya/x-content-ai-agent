@@ -18,6 +18,7 @@
   "workflows": [
     {
       "name": "content-generation",
+      "binding": "CONTENT_GENERATION",
       "class_name": "ContentGenerationWorkflow",
       "script_name": "src/workflows/content-generation.ts"
     }
