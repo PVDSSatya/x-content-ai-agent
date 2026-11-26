@@ -31,6 +31,7 @@ export { ContentGenerationWorkflow };
 // Environment bindings
 export interface Env {
   DB: D1Database;
+  ENVIRONMENT?: string;
   CONTENT_GENERATION?: Workflow;
   GITHUB_TOKEN?: string;
   OPENROUTER_API_KEY: string;
@@ -67,6 +68,27 @@ app.use("*", cors({
   allowHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 }));
+
+// Root status endpoint
+app.get("/", (c) => {
+  return c.json({
+    name: "x-content-ai-agent",
+    status: "ok",
+    version: "1.0.0",
+    environment: c.env.ENVIRONMENT || "development",
+    endpoints: [
+      "GET /api/health",
+      "POST /api/generate",
+      "GET /api/drafts",
+      "GET /api/drafts/:id",
+      "POST /api/feedback",
+      "GET /api/brand-memory",
+      "GET /api/analytics/performance",
+      "GET /api/research/topics",
+      "POST /api/research/trigger",
+    ],
+  });
+});
 
 // Auth middleware
 app.use("/api/*", async (c, next) => {
