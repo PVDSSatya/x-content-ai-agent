@@ -1,0 +1,35 @@
+{
+  "name": "x-content-ai-agent",
+  "version": "1.0.0",
+  "description": "AI-powered X content creation agent with multi-agent architecture",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:create": "wrangler d1 create x-content-agent",
+    "db:migrate": "wrangler d1 migrations apply x-content-agent",
+    "db:migrate:local": "wrangler d1 migrations apply x-content-agent --local",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20240000.0",
+    "@hono/zod-validator": "^0.9.1",
+    "hono": "^4.6.0",
+    "openai": "^4.60.0",
+    "rss-parser": "^3.13.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.10.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0",
+    "wrangler": "^3.80.0"
+  },
+  "private": true
+}

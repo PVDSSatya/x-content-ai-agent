@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.build/
+
+# Environment files
+.dev.vars
+.dev.vars.local
+*.env
+*.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
+
+# Wrangler
+.wrangler/
+
+# Unpacked docx files (reference materials)
+*_unpacked/
+
+# TypeScript cache
+*.tsbuildinfo

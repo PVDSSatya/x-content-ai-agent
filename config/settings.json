@@ -1,0 +1,168 @@
+{
+  "ai_models": {
+    "researcher": {
+      "model": "anthropic/claude-3.5-sonnet",
+      "temperature": 0.3,
+      "max_tokens": 4000,
+      "purpose": "Factual research and topic discovery"
+    },
+    "viral_analyst": {
+      "model": "anthropic/claude-3.5-sonnet",
+      "temperature": 0.5,
+      "max_tokens": 4000,
+      "purpose": "Content framework analysis and reverse engineering"
+    },
+    "strategist": {
+      "model": "anthropic/claude-3.5-sonnet",
+      "temperature": 0.4,
+      "max_tokens": 3000,
+      "purpose": "Content strategy and format selection"
+    },
+    "copywriter": {
+      "model": "anthropic/claude-3.5-sonnet",
+      "temperature": 0.7,
+      "max_tokens": 4000,
+      "purpose": "Creative post generation with multiple variations"
+    },
+    "editor": {
+      "model": "anthropic/claude-3.5-sonnet",
+      "temperature": 0.2,
+      "max_tokens": 4000,
+      "purpose": "Fact-checking and editorial scoring"
+    },
+    "performance_analyst": {
+      "model": "anthropic/claude-3.5-sonnet",
+      "temperature": 0.3,
+      "max_tokens": 3000,
+      "purpose": "Performance analysis and pattern identification"
+    }
+  },
+  "editorial_scoring": {
+    "weights": {
+      "hook_strength": 0.20,
+      "originality": 0.20,
+      "factual_accuracy": 0.20,
+      "audience_relevance": 0.15,
+      "clarity_readability": 0.10,
+      "shareability": 0.10,
+      "brand_alignment": 0.05
+    },
+    "thresholds": {
+      "excellent": 90,
+      "ready_for_review": 85,
+      "requires_rewriting": 70,
+      "reject": 0
+    },
+    "mandatory_gates": [
+      "factual_accuracy",
+      "platform_compliance"
+    ]
+  },
+  "content_generation": {
+    "max_variations_per_topic": 5,
+    "max_rewrite_attempts": 2,
+    "standard_post_max_chars": 280,
+    "long_form_post_max_chars": 25000,
+    "min_editorial_score_for_approval": 85,
+    "enable_long_form": false
+  },
+  "research": {
+    "lookback_hours": 48,
+    "max_topics_per_run": 20,
+    "min_novelty_score": 0.6,
+    "min_freshness_score": 0.5,
+    "min_relevance_score": 0.5,
+    "deduplication_threshold": 0.85,
+    "require_source_verification": true
+  },
+  "viral_analysis": {
+    "recon_process_enabled": true,
+    "mechanisms_to_test": [
+      "contrast",
+      "belief_revision",
+      "recognition",
+      "compressed_principle",
+      "concrete_evidence",
+      "unexpected_consequence",
+      "practical_shortcut",
+      "status_identity",
+      "timely_interpretation",
+      "story_with_turn",
+      "useful_disagreement",
+      "visual_demonstration"
+    ],
+    "frameworks_to_apply": [
+      "F1_tension_mechanism_implication",
+      "F2_common_belief_qualification_better_model",
+      "F3_observation_principle_application",
+      "F4_before_friction_after",
+      "F5_claim_evidence_decision",
+      "F6_failure_diagnosis_lesson",
+      "F7_trend_second_order_effect_opportunity",
+      "F8_checklist_exception_priority"
+    ],
+    "min_comparison_set_size": 10
+  },
+  "workflow": {
+    "max_execution_time_ms": 300000,
+    "max_tokens_per_run": 50000,
+    "retry_policy": {
+      "max_attempts": 3,
+      "base_delay_ms": 1000,
+      "max_delay_ms": 30000,
+      "exponential_base": 2
+    },
+    "checkpoint_interval_steps": 2
+  },
+  "rate_limiting": {
+    "requests_per_minute": 60,
+    "requests_per_hour": 1000,
+    "requests_per_day": 10000,
+    "burst_allowance": 10
+  },
+  "database": {
+    "max_connections": 10,
+    "query_timeout_ms": 30000,
+    "migration_timeout_ms": 60000
+  },
+  "platform_compliance": {
+    "x_character_limit": 280,
+    "x_long_form_limit": 25000,
+    "prohibited_content": [
+      "spam",
+      "misinformation",
+      "hate_speech",
+      "harassment",
+      "violence",
+      "illegal_activities",
+      "pii",
+      "copyrighted_material"
+    ],
+    "require_disclosure_for_ai_generated": false,
+    "max_hashtags": 3,
+    "max_mentions": 2,
+    "max_urls": 1
+  },
+  "feedback_learning": {
+    "enabled": true,
+    "min_feedback_samples_for_pattern": 10,
+    "feedback_weight_in_scoring": 0.15,
+    "pattern_confidence_threshold": 0.7
+  },
+  "observability": {
+    "log_level": "info",
+    "enable_tracing": true,
+    "metrics_enabled": true,
+    "alert_on_failure": true
+  },
+  "feature_flags": {
+    "auto_mode": true,
+    "topic_mode": true,
+    "url_mode": true,
+    "viral_framework_mode": true,
+    "evergreen_mode": true,
+    "mock_integrations": false,
+    "human_review_required": true,
+    "auto_publish": false
+  }
+}

@@ -1,0 +1,49 @@
+# Copy this file to .dev.vars and fill in your values
+
+# OpenRouter API Key (get from https://openrouter.ai/keys)
+OPENROUTER_API_KEY=your-openrouter-api-key
+
+# OpenRouter Model Configuration
+# Free models: google/gemma-2-9b-it:free, microsoft/phi-3-mini-128k-instruct:free, meta-llama/llama-3.1-8b-instruct:free
+# Paid models: anthropic/claude-3.5-sonnet, openai/gpt-4o, google/gemini-1.5-pro
+OPENROUTER_MODEL=anthropic/claude-3.5-sonnet
+OPENROUTER_FALLBACK_MODEL=google/gemini-1.5-flash
+
+# AI Provider Settings
+AI_MAX_TOKENS_PER_REQUEST=4000
+AI_MAX_TOTAL_TOKENS_PER_RUN=50000
+AI_TEMPERATURE=0.7
+AI_MAX_RETRIES=3
+AI_RETRY_BASE_DELAY_MS=1000
+
+# Research Settings
+RESEARCH_LOOKBACK_HOURS=48
+RESEARCH_MAX_TOPICS_PER_RUN=20
+RESEARCH_MIN_NOVELTY_SCORE=0.6
+RESEARCH_MIN_FRESHNESS_SCORE=0.5
+
+# Content Generation Settings
+CONTENT_MAX_VARIATIONS=5
+CONTENT_MAX_CHARACTERS=280
+CONTENT_MAX_LONG_FORM_CHARACTERS=25000
+CONTENT_EDITORIAL_MIN_SCORE=85
+CONTENT_MAX_REWRITE_ATTEMPTS=2
+
+# Database
+DB_MAX_CONNECTIONS=10
+
+# Rate Limiting
+RATE_LIMIT_REQUESTS_PER_MINUTE=60
+RATE_LIMIT_REQUESTS_PER_HOUR=1000
+
+# Security
+API_KEY=your-secure-api-key-for-endpoints
+JWT_SECRET=your-jwt-secret-for-auth
+
+# Feature Flags
+ENABLE_AUTO_MODE=true
+ENABLE_TOPIC_MODE=true
+ENABLE_URL_MODE=true
+ENABLE_VIRAL_FRAMEWORK_MODE=true
+ENABLE_EVERGREEN_MODE=true
+ENABLE_MOCK_INTEGRATIONS=false

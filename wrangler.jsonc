@@ -1,0 +1,28 @@
+{
+  "$schema": "https://wrangler.cloudflare.com/wrangler.json",
+  "name": "x-content-ai-agent",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "vars": {
+    "ENVIRONMENT": "development"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "x-content-agent",
+      "database_id": "your-database-id-here"
+    }
+  ],
+  "workflows": [
+    {
+      "name": "content-generation",
+      "class_name": "ContentGenerationWorkflow",
+      "script_name": "src/workflows/content-generation.ts"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

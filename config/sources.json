@@ -1,0 +1,228 @@
+{
+  "rss_feeds": [
+    {
+      "name": "OpenAI Blog",
+      "url": "https://openai.com/blog/rss.xml",
+      "category": "ai-news",
+      "credibility": 10,
+      "enabled": true
+    },
+    {
+      "name": "Anthropic Blog",
+      "url": "https://www.anthropic.com/news/rss.xml",
+      "category": "ai-news",
+      "credibility": 10,
+      "enabled": true
+    },
+    {
+      "name": "Google AI Blog",
+      "url": "https://ai.googleblog.com/feeds/posts/default",
+      "category": "ai-news",
+      "credibility": 9,
+      "enabled": true
+    },
+    {
+      "name": "Hugging Face Blog",
+      "url": "https://huggingface.co/blog/feed.xml",
+      "category": "ai-news",
+      "credibility": 9,
+      "enabled": true
+    },
+    {
+      "name": "LangChain Blog",
+      "url": "https://blog.langchain.dev/rss/",
+      "category": "ai-agents",
+      "credibility": 8,
+      "enabled": true
+    },
+    {
+      "name": "Vercel Blog",
+      "url": "https://vercel.com/blog/rss.xml",
+      "category": "dev-tools",
+      "credibility": 9,
+      "enabled": true
+    },
+    {
+      "name": "Cloudflare Blog",
+      "url": "https://blog.cloudflare.com/rss/",
+      "category": "infrastructure",
+      "credibility": 9,
+      "enabled": true
+    },
+    {
+      "name": "GitHub Blog",
+      "url": "https://github.blog/feed/",
+      "category": "dev-tools",
+      "credibility": 10,
+      "enabled": true
+    },
+    {
+      "name": "AWS News Blog",
+      "url": "https://aws.amazon.com/blogs/aws/feed/",
+      "category": "infrastructure",
+      "credibility": 9,
+      "enabled": true
+    },
+    {
+      "name": "Stripe Blog",
+      "url": "https://stripe.com/blog/rss",
+      "category": "saas",
+      "credibility": 9,
+      "enabled": true
+    },
+    {
+      "name": "Linear Blog",
+      "url": "https://linear.blog/feed.xml",
+      "category": "saas",
+      "credibility": 8,
+      "enabled": true
+    },
+    {
+      "name": "PlanetScale Blog",
+      "url": "https://planetscale.com/blog/rss.xml",
+      "category": "infrastructure",
+      "credibility": 8,
+      "enabled": true
+    },
+    {
+      "name": "Supabase Blog",
+      "url": "https://supabase.com/blog/rss.xml",
+      "category": "infrastructure",
+      "credibility": 8,
+      "enabled": true
+    },
+    {
+      "name": "Tailscale Blog",
+      "url": "https://tailscale.com/blog/rss.xml",
+      "category": "cybersecurity",
+      "credibility": 9,
+      "enabled": true
+    },
+    {
+      "name": "Fly.io Blog",
+      "url": "https://fly.io/blog/rss.xml",
+      "category": "infrastructure",
+      "credibility": 8,
+      "enabled": true
+    }
+  ],
+  "github": {
+    "trending_topics": [
+      "artificial-intelligence",
+      "machine-learning",
+      "llm",
+      "ai-agents",
+      "automation",
+      "developer-tools",
+      "cli",
+      "typescript",
+      "rust",
+      "go",
+      "python",
+      "web-development",
+      "saas",
+      "cybersecurity",
+      "devops",
+      "kubernetes",
+      "observability"
+    ],
+    "starred_organizations": [
+      "openai",
+      "anthropics",
+      "huggingface",
+      "langchain-ai",
+      "vercel",
+      "cloudflare",
+      "supabase",
+      "planetscale",
+      "linear",
+      "tailscale",
+      "flyteorg",
+      "prefecthq",
+      "dagster-io",
+      "temporalio"
+    ],
+    "monitor_releases": true,
+    "monitor_security_advisories": true
+  },
+  "hacker_news": {
+    "enabled": true,
+    "top_stories_limit": 50,
+    "new_stories_limit": 100,
+    "relevant_keywords": [
+      "AI", "LLM", "GPT", "Claude", "Gemini", "agent", "automation",
+      "typescript", "rust", "go", "python", "javascript",
+      "saas", "startup", "founder", "indie hacker",
+      "github", "open source", "compiler", "runtime",
+      "security", "vulnerability", "exploit",
+      "database", "postgres", "sqlite", "vector",
+      "kubernetes", "docker", "container",
+      "observability", "monitoring", "logging",
+      "api", "graphql", "rest", "grpc",
+      "frontend", "react", "vue", "svelte", "nextjs"
+    ]
+  },
+  "hugging_face": {
+    "enabled": true,
+    "monitor_model_releases": true,
+    "monitor_spaces": true,
+    "top_tags": [
+      "text-generation",
+      "conversational",
+      "code-generation",
+      "llm",
+      "agent",
+      "rag",
+      "fine-tuning",
+      "quantization"
+    ]
+  },
+  "product_hunt": {
+    "enabled": true,
+    "categories": [
+      "developer-tools",
+      "artificial-intelligence",
+      "saas",
+      "productivity",
+      "analytics",
+      "security"
+    ]
+  },
+  "arxiv": {
+    "enabled": true,
+    "categories": [
+      "cs.AI",
+      "cs.CL",
+      "cs.LG",
+      "cs.SE",
+      "cs.CR",
+      "cs.DC",
+      "cs.DB"
+    ],
+    "max_results_per_category": 20
+  },
+  "news_apis": {
+    "techcrunch": {
+      "enabled": true,
+      "rss": "https://techcrunch.com/feed/"
+    },
+    "the_verge": {
+      "enabled": true,
+      "rss": "https://www.theverge.com/rss/index.xml"
+    },
+    "ars_technica": {
+      "enabled": true,
+      "rss": "https://feeds.arstechnica.com/arstechnica/technology-lab"
+    },
+    "wired": {
+      "enabled": true,
+      "rss": "https://www.wired.com/feed/rss"
+    }
+  },
+  "source_credibility_thresholds": {
+    "minimum_for_fact_checking": 7,
+    "minimum_for_citation": 5,
+    "prefer_primary_sources": true,
+    "require_multiple_sources_for_claims": true
+  }
+}

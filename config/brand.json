@@ -1,0 +1,183 @@
+{
+  "content_niche": "Artificial intelligence, AI agents, automation, LLMs, software engineering, system architecture, open-source tools, SaaS, cybersecurity, developer productivity, AI coding tools, technology industry, building in public, startup insights",
+  "target_audience": [
+    "software developers",
+    "AI engineers",
+    "startup founders",
+    "solo entrepreneurs",
+    "indie hackers",
+    "SaaS builders",
+    "technology enthusiasts",
+    "AI automation professionals",
+    "cybersecurity professionals"
+  ],
+  "writing_personality": {
+    "traits": [
+      "intelligent",
+      "curious",
+      "concise",
+      "technically credible",
+      "occasionally humorous",
+      "direct",
+      "practical",
+      "independently minded"
+    ],
+    "description": "The content should establish the creator as someone who understands technology, builds products, experiments with AI, and shares meaningful insights. Never manufacture personal experiences to maintain this positioning."
+  },
+  "preferred_vocabulary": [
+    "build",
+    "ship",
+    "iterate",
+    "bottleneck",
+    "leverage",
+    "compound",
+    "asymmetric",
+    "first-principles",
+    "trade-off",
+    "signal",
+    "noise",
+    "handoff",
+    "workflow",
+    "automation",
+    "integration",
+    "reliability",
+    "monitoring",
+    "escalation",
+    "exception",
+    "happy path",
+    "production",
+    "prototype",
+    "demo",
+    "requirements",
+    "specifications",
+    "architecture",
+    "design",
+    "decision",
+    "outcome",
+    "measurement",
+    "feedback",
+    "loop"
+  ],
+  "prohibited_expressions": [
+    "game-changer",
+    "revolutionary",
+    "groundbreaking",
+    "unprecedented",
+    "skyrocket",
+    "10x",
+    "crush it",
+    "hustle",
+    "grind",
+    "secret sauce",
+    "magic bullet",
+    "silver bullet",
+    "holy grail",
+    "best practice (without context)",
+    "industry standard (without citation)",
+    "guaranteed results",
+    "proven to work",
+    "never fails",
+    "always works",
+    "everyone should",
+    "you must",
+    "stop doing X",
+    "start doing Y",
+    "🚀",
+    "💯",
+    "🔥",
+    "🧵",
+    "#AI",
+    "#MachineLearning",
+    "#Tech",
+    "#Innovation",
+    "#Startup",
+    "#Entrepreneurship"
+  ],
+  "content_pillars": [
+    {
+      "name": "Original Insights",
+      "target_weekly_posts": 10,
+      "description": "Defensible reasoning or lived observation about technology, building products, or AI automation",
+      "proof_required": "First-hand evidence or rigorous reasoning"
+    },
+    {
+      "name": "Practical AI Education",
+      "target_weekly_posts": 6,
+      "description": "Mini diagrams, steps, limitations - actionable AI/automation knowledge",
+      "proof_required": "Code snippets, architecture diagrams, working examples"
+    },
+    {
+      "name": "Build-in-Public Demos",
+      "target_weekly_posts": 5,
+      "description": "Screenshots, clips, architecture of actual builds",
+      "proof_required": "Real artifacts, not mockups"
+    },
+    {
+      "name": "Case Studies / Breakdowns",
+      "target_weekly_posts": 4,
+      "description": "Before/after, process, measured results from real projects",
+      "proof_required": "Metrics, timestamps, before/after comparison"
+    },
+    {
+      "name": "Service Conversations",
+      "target_weekly_posts": 3,
+      "description": "Clear audience, problem and next step - business development",
+      "proof_required": "Specific audience definition and genuine offer"
+    }
+  ],
+  "preferred_content_formats": [
+    "punchy one-liner",
+    "contrarian opinion",
+    "educational insight",
+    "breaking technology news",
+    "technical explanation",
+    "curiosity-driven post",
+    "developer humour",
+    "relatable observation",
+    "open-source tool discovery",
+    "comparison",
+    "future prediction",
+    "storytelling",
+    "debate question",
+    "numbered list",
+    "long-form post",
+    "educational thread"
+  ],
+  "successful_previous_posts": [],
+  "personal_opinions": {
+    "ai_coding": "AI makes prototyping faster. It makes deciding what deserves production more important.",
+    "automation": "A business rarely needs ten more automations. It needs one broken handoff fixed.",
+    "generated_code": "Generated code is abundant. Clear requirements are scarce.",
+    "manual_work": "The cost of manual lead entry is not typing. It is delayed follow-up.",
+    "ai_future": "As AI coding becomes commonplace, system design and accountability matter more.",
+    "monitoring": "An automation without monitoring is a future support ticket.",
+    "observation": "A lead can arrive at midnight. Your follow-up process should not depend on someone being awake."
+  },
+  "business_objectives": [
+    "Earn relevant attention from target audience",
+    "Demonstrate practical expertise in AI/automation",
+    "Turn qualified conversations into client opportunities",
+    "Build authority in AI automation and web development",
+    "Generate inbound inquiries for consulting/services"
+  ],
+  "editorial_instructions": {
+    "accuracy_first": true,
+    "audience_relevance_priority": true,
+    "clarity_over_cleverness": true,
+    "distinctiveness_required": true,
+    "engagement_not_primary": true,
+    "conversion_aligned": true,
+    "one_central_idea_per_post": true,
+    "distinguish_fact_opinion": true,
+    "qualify_uncertainty": true,
+    "no_fabricated_proof": true,
+    "no_engagement_bait": true,
+    "no_borrowed_phrasing": true,
+    "direct_cta_only_when_earned": true
+  },
+  "posting_frequency": {
+    "target_posts_per_week": 28,
+    "minimum_quality_threshold": 8,
+    "reduce_if_compromises": true
+  }
+}
