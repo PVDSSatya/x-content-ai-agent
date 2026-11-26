@@ -24,5 +24,17 @@
   ],
   "observability": {
     "enabled": true
+  },
+  "environments": {
+    "staging": {
+      "vars": {
+        "ENVIRONMENT": "staging"
+      }
+    },
+    "production": {
+      "vars": {
+        "ENVIRONMENT": "production"
+      }
+    }
   }
 }
