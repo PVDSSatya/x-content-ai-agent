@@ -104,4 +104,27 @@ describe("Worker API endpoints", () => {
     expect(createMock.mock.calls[1]?.[0]?.model).toBe("openrouter/free");
     expect(result.content).toEqual([{ name: "ok" }]);
   });
+
+  it("OpenRouterProvider disables SDK retries and skips free fallback on free-models-per-min 429", async () => {
+    const provider = OpenRouterProvider.fromEnv({
+      OPENROUTER_API_KEY: "test-key",
+    } as any);
+
+    expect((provider as any).client.maxRetries).toBe(0);
+
+    const createMock = vi
+      .fn()
+      .mockRejectedValue(new Error("429 Rate limit exceeded: free-models-per-min."));
+
+    (provider as any).client = {
+      chat: { completions: { create: createMock } },
+    };
+    (provider as any).config.maxRetries = 0;
+
+    await expect(
+      provider.complete({ messages: [{ role: "user", content: "hi" }] })
+    ).rejects.toThrow("free-models-per-min");
+
+    expect(createMock).toHaveBeenCalledTimes(1);
+  });
 });

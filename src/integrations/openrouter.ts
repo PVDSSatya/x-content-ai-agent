@@ -51,6 +51,7 @@ export class OpenRouterProvider implements AIProvider {
     this.client = new OpenAI({
       apiKey: config.apiKey,
       baseURL: config.baseURL,
+      maxRetries: 0, // Disable SDK internal retries so our retry/fallback loop doesn't multiply requests
       defaultHeaders: {
         "HTTP-Referer": "https://github.com/x-content-ai-agent",
         "X-Title": "X Content AI Agent",
@@ -94,13 +95,23 @@ export class OpenRouterProvider implements AIProvider {
       }
 
       const fallback = this.config.fallbackModel;
-      if (fallback && fallback !== primaryModel) {
+      const isGlobalFreeRateLimit = this.isGlobalFreeTierRateLimit(primaryError);
+      if (fallback && fallback !== primaryModel && !(isGlobalFreeRateLimit && this.isFreeModel(fallback))) {
         console.warn(`Primary model "${primaryModel}" failed, falling back to "${fallback}":`, primaryError);
         return await this.completeWithModel<T>(fallback, request);
       }
 
       throw primaryError;
     }
+  }
+
+  private isFreeModel(model: string): boolean {
+    return model === "openrouter/free" || model.endsWith(":free");
+  }
+
+  private isGlobalFreeTierRateLimit(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error);
+    return message.includes("free-models-per-min") || message.includes("free-models-per-day");
   }
 
   private async completeWithModel<T>(model: string, request: AIRequest): Promise<AIResponse<T>> {
@@ -160,16 +171,28 @@ export class OpenRouterProvider implements AIProvider {
             useJsonFormat = false;
             continue;
           }
-          // Don't retry on permanent auth/client/missing-model errors
-          if (error.status === 400 || error.status === 401 || error.status === 403 || error.status === 404) {
+          // Don't retry on permanent auth/client/missing-model/daily-limit errors
+          if (
+            error.status === 400 ||
+            error.status === 401 ||
+            error.status === 403 ||
+            error.status === 404 ||
+            (error.status === 429 && error.message.includes("free-models-per-day"))
+          ) {
             throw error;
           }
         }
 
-        // Wait before retry with exponential backoff
+        // Wait before retry (honor Retry-After header when available, capped for Worker request limits)
         if (attempt < this.config.maxRetries) {
-          const delay = this.config.retryBaseDelayMs * Math.pow(2, attempt);
-          await this.sleep(delay + Math.random() * 1000); // Add jitter
+          const retryAfterHeader =
+            error instanceof OpenAI.APIError ? error.headers?.get?.("retry-after") : null;
+          const retryAfterMs = retryAfterHeader ? parseFloat(retryAfterHeader) * 1000 : NaN;
+          const backoffMs =
+            Number.isFinite(retryAfterMs) && retryAfterMs > 0
+              ? Math.min(retryAfterMs, 15000)
+              : Math.min(this.config.retryBaseDelayMs * Math.pow(2, attempt), 10000);
+          await this.sleep(backoffMs + Math.random() * 500); // Add jitter
         }
       }
     }
